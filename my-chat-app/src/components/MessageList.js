@@ -1,20 +1,30 @@
 // src/components/MessageList.js
 import React, { useState, useEffect } from 'react';
+import { w3cwebsocket as W3CWebSocket } from 'websocket';
+
+const ws = new W3CWebSocket('ws://localhost:8080/ws');
 
 function MessageList() {
   const [messages, setMessages] = useState([]);
 
   useEffect(() => {
-    // Fetch messages from the backend
-    fetch('http://localhost:8080/api/messages') // Update the URL with your Golang backend URL
-      .then(response => response.json())
-      .then(data => setMessages(data))
-      .catch(error => console.error('Error fetching messages:', error));
+    ws.onmessage = (event) => {
+      const message = JSON.parse(event.data);
+      setMessages((prevMessages) => [...prevMessages, message]);
+    };
+
+    ws.onclose = () => {
+      console.log('WebSocket connection closed');
+    };
+
+    return () => {
+      ws.close();
+    };
   }, []);
 
   return (
     <div className="message-container">
-      {messages && messages.map(message => (
+      {messages.map((message) => (
         <div key={message.id} className="message">
           {message.content}
         </div>
