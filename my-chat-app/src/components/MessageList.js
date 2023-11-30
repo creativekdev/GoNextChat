@@ -8,6 +8,10 @@ function MessageList() {
   const [messages, setMessages] = useState([]);
 
   useEffect(() => {
+    // Fetch initial messages from the server
+    fetchMessages();
+
+    // WebSocket event listeners
     ws.onmessage = (event) => {
       const message = JSON.parse(event.data);
       setMessages((prevMessages) => [...prevMessages, message]);
@@ -21,6 +25,16 @@ function MessageList() {
       ws.close();
     };
   }, []);
+
+  const fetchMessages = async () => {
+    try {
+      const response = await fetch('http://localhost:8080/api/messages');
+      const data = await response.json();
+      setMessages(data);
+    } catch (error) {
+      console.error('Error fetching messages:', error);
+    }
+  };
 
   return (
     <div className="message-container">
